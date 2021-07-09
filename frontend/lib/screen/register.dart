@@ -1,75 +1,60 @@
 import 'dart:convert';
 
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:frontend/model/Usuario.dart';
 import 'package:frontend/screen/http_service.dart';
 import 'package:frontend/screen/login.dart';
-
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:http/http.dart' as http;
+class Register extends StatefulWidget {
+  Register({Key? key}) : super(key: key);
 
-class EditProfile extends StatefulWidget {
-  late String json;
-  EditProfile({required String json}){
-    this.json = json;
-  }
   @override
-  _EditProfileState createState() => _EditProfileState();
+  _RegisterState createState() => _RegisterState();
 
 }
 
+class _RegisterState extends State<Register> {
 
-final _formKey = GlobalKey<FormState>();
-class _EditProfileState extends State<EditProfile>  {
-  final _email = TextEditingController();
-  final _senha = TextEditingController();
-  final _nome = TextEditingController();
-  final _id = TextEditingController();
 
 
   @override
   Widget build(BuildContext context) {
-
-   if(widget.json.isNotEmpty){
-     Map<String, dynamic> map = jsonDecode(widget.json);
-     Usuario obj = Usuario.fromJson(map);
-
-
-     this._nome.text = obj.nome;
-     this._senha.text = obj.senha;
-     this._email.text = obj.email;
-     this._id.text = obj.id.toString();
-
-
-   }
+    late Future<Usuario> user;
+    final _formKey = GlobalKey<FormState>();
+    final _email = TextEditingController();
+    final _senha = TextEditingController();
+    final _nome = TextEditingController();
 
     return Scaffold(
 
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(32, 99, 155, 1),
-        title: Text("EDITAR PERFIL"),
-        centerTitle: true,
-
-      ),
-
       body: SingleChildScrollView(
-
         child: Form(
-
           key: _formKey,
           child: new Column(
-
-
-
               children: [
+                Container(
 
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
 
                       SizedBox(
-                        height: 50,
+                        height: 200,
 
                       ),
+                      new Text("CRIAR CONTA",style: GoogleFonts.roboto(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 40,
+                          color: Color.fromRGBO(32, 99, 155, 1)
+                      ),),
 
+                    ],
+                  ),
+                ),
                 Column(
                   children: [
                     Align(
@@ -92,12 +77,11 @@ class _EditProfileState extends State<EditProfile>  {
                     ),
                     Container(
                       width: 305,
-
                       child: TextFormField(
-
                         autofocus: true,
 
-                        controller: _nome,
+
+                        controller:_nome,
 
 
                         style: TextStyle(
@@ -152,9 +136,7 @@ class _EditProfileState extends State<EditProfile>  {
 
                       width: 305,
                       child: TextFormField(
-
                         controller: _email,
-
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.normal,
@@ -179,19 +161,12 @@ class _EditProfileState extends State<EditProfile>  {
 
                     ),
 
-
-
-
-
-
                   ],
                 ),
                 SizedBox(
                   height: 30,
                 ),
-
                 Column(
-
                   children: [
                     Align(
                       alignment: Alignment.topLeft,
@@ -216,7 +191,6 @@ class _EditProfileState extends State<EditProfile>  {
                       width: 305,
                       child: TextFormField(
                         controller: _senha,
-
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.normal,
@@ -243,70 +217,53 @@ class _EditProfileState extends State<EditProfile>  {
                   ],
                 ),
 
-                SizedBox(
-                  height: 50,
-                ),
                 Container(
-
+                  margin: EdgeInsets.symmetric(vertical: 30),
                   child: ElevatedButton(
-                    style: confirmButton,
-                    onPressed: ()async {
+                    style: registerButton,
+                    onPressed: () async {
 
-                      int id_user = int.parse(_id.text);
-                      var response = await HttpService().updateClient(_nome.text,_email.text,_senha.text,id_user);
+                      if(_formKey.currentState!.validate()){
+                        var response = await HttpService().postRegister(_nome.text,_email.text,_senha.text);
+                        if(response.email == ""){
+                          final error = SnackBar(
+                            content: Text("Este email já está cadastrado!"),
+                            backgroundColor: Colors.red,
 
-                      if(response.senha == "" && response.email == ""){
-                        final error= SnackBar(
-                          content: Text("Algo deu errado"),
-                          backgroundColor: Colors.red,
 
-                        );
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(error);
+                        }else{
+                          final sucess = SnackBar(
+                            content: Text("Cadastrado com sucesso!"),
+                            backgroundColor: Colors.green,
 
-                        ScaffoldMessenger.of(context).showSnackBar(error);
-                      }else{
 
-                        var prefs = await SharedPreferences.getInstance();
-                        prefs.clear();
-                        await HttpService().searchClient(id_user);
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(sucess);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Login())
+                          );
+                        }
 
-                        final sucess = SnackBar(
-                          content: Text("Usuario editado com sucesso!"),
-                          backgroundColor: Colors.green,
 
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(sucess);
-                        Navigator.pop(context);
+
                       }
 
                     }, child: Text("CONFIRMAR",),
                   ),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+
                 Container(
-
-                  child: ElevatedButton(
-                    style: deleteButton,
-                    onPressed: () async{
-                      int id_user = int.parse(_id.text);
-                      var response = await HttpService().deleteClient(id_user);
-                      if(response.toString().isNotEmpty){
-
-                        final sucess = SnackBar(
-                          content: Text("Usuario deletado com sucesso!"),
-                          backgroundColor: Colors.indigo,
-
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(sucess);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => Login()),
-                            (Route<dynamic> route) => false,
-                        );
-                      }
-                    }, child: Text("DELETAR PERFIL",),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    color: Color.fromRGBO(32, 99, 155, 1),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }
                   ),
+
                 ),
 
 
@@ -323,11 +280,11 @@ class _EditProfileState extends State<EditProfile>  {
   }
 }
 
-final ButtonStyle confirmButton = TextButton.styleFrom(
+final ButtonStyle registerButton = TextButton.styleFrom(
 
-    minimumSize: Size(233, 53),
+    minimumSize: Size(166, 53),
     padding: EdgeInsets.symmetric(horizontal: 16.0),
-    backgroundColor: Colors.green,
+    backgroundColor: Color.fromRGBO(32, 99, 155, 1),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(2.0)),
 
@@ -339,18 +296,21 @@ final ButtonStyle confirmButton = TextButton.styleFrom(
     )
 );
 
-final ButtonStyle deleteButton = TextButton.styleFrom(
-
-    minimumSize: Size(233, 53),
+final ButtonStyle backButton = TextButton.styleFrom(
+    primary: Color.fromRGBO(32, 99, 155, 1),
+    minimumSize: Size(166, 53),
     padding: EdgeInsets.symmetric(horizontal: 16.0),
-    backgroundColor: Colors.red,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(2.0)),
 
+
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(2.0)),
+        side: BorderSide(
+          color: Color.fromRGBO(32, 99, 155, 1),
+        )
     ),
     textStyle: GoogleFonts.roboto(
       fontWeight: FontWeight.bold,
       fontSize: 20,
-
     )
+
 );
