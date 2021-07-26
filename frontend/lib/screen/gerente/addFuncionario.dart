@@ -1,76 +1,59 @@
-import 'dart:convert';
 
+
+
+
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:frontend/model/Usuario.dart';
-import 'package:frontend/screen/http_service.dart';
-import 'package:frontend/screen/login.dart';
-
+import 'package:frontend/screen/api/http_service.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class EditProfile extends StatefulWidget {
-  late String json;
-  EditProfile({required String json}){
-    this.json = json;
-  }
+import 'dashboardGerente.dart';
+
+class AdicionarFuncionario extends StatefulWidget{
+  AdicionarFuncionario({Key? key}) : super(key: key);
+
   @override
-  _EditProfileState createState() => _EditProfileState();
+  _AdicionarFuncionarioState createState() => _AdicionarFuncionarioState();
 
 }
 
-
-final _formKey = GlobalKey<FormState>();
-class _EditProfileState extends State<EditProfile>  {
+class _AdicionarFuncionarioState extends State<AdicionarFuncionario>{
+  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _senha = TextEditingController();
   final _nome = TextEditingController();
-  final _id = TextEditingController();
+  final _permissao = TextEditingController();
 
-
-  @override
-  Widget build(BuildContext context) {
-
-   if(widget.json.isNotEmpty){
-     Map<String, dynamic> map = jsonDecode(widget.json);
-     Usuario obj = Usuario.fromJson(map);
-
-
-     this._nome.text = obj.nome;
-     this._senha.text = obj.senha;
-     this._email.text = obj.email;
-     this._id.text = obj.id.toString();
-
-
-   }
+  Widget build(BuildContext contex){
 
     return Scaffold(
-
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(32, 99, 155, 1),
-        title: Text("EDITAR PERFIL"),
-        centerTitle: true,
-
-      ),
-
       body: SingleChildScrollView(
-
         child: Form(
-
           key: _formKey,
           child: new Column(
-
-
-
               children: [
+                Container(
 
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
 
                       SizedBox(
-                        height: 50,
+                        height: 150,
 
                       ),
+                      new Text("ADICIONAR FUNCIONARIO",style: GoogleFonts.roboto(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 25,
+                          color: Color.fromRGBO(32, 99, 155, 1)
+                      ),),
 
+                    ],
+                  ),
+                ),
                 Column(
+
                   children: [
                     Align(
                       alignment: Alignment.topLeft,
@@ -92,12 +75,11 @@ class _EditProfileState extends State<EditProfile>  {
                     ),
                     Container(
                       width: 305,
-
                       child: TextFormField(
-
                         autofocus: true,
 
-                        controller: _nome,
+
+                        controller:_nome,
 
 
                         style: TextStyle(
@@ -113,7 +95,7 @@ class _EditProfileState extends State<EditProfile>  {
                           return null;
                         },
                         decoration: InputDecoration(
-                          hintText: 'Digite seu nome',
+                          hintText: 'Digite um nome',
                         ),
 
                       ),
@@ -152,9 +134,7 @@ class _EditProfileState extends State<EditProfile>  {
 
                       width: 305,
                       child: TextFormField(
-
                         controller: _email,
-
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.normal,
@@ -168,7 +148,7 @@ class _EditProfileState extends State<EditProfile>  {
                           return null;
                         },
                         decoration: InputDecoration(
-                            hintText: 'Digite seu email',
+                            hintText: 'Digite um email',
                             border: UnderlineInputBorder(
                                 borderSide: new BorderSide(
                                     color: Color.fromRGBO(32, 99, 155, 1)
@@ -179,19 +159,12 @@ class _EditProfileState extends State<EditProfile>  {
 
                     ),
 
-
-
-
-
-
                   ],
                 ),
                 SizedBox(
                   height: 30,
                 ),
-
                 Column(
-
                   children: [
                     Align(
                       alignment: Alignment.topLeft,
@@ -216,7 +189,6 @@ class _EditProfileState extends State<EditProfile>  {
                       width: 305,
                       child: TextFormField(
                         controller: _senha,
-
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.normal,
@@ -230,7 +202,7 @@ class _EditProfileState extends State<EditProfile>  {
                           return null;
                         },
                         decoration: InputDecoration(
-                            hintText: 'Digite sua senha',
+                            hintText: 'Digite uma senha',
                             border: UnderlineInputBorder(
                                 borderSide: new BorderSide(
                                     color: Color.fromRGBO(32, 99, 155, 1)
@@ -240,73 +212,94 @@ class _EditProfileState extends State<EditProfile>  {
                       ),
 
                     ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Align(
+                      alignment: Alignment.topLeft,
+
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 50.0),
+                        child: Column(
+                          children: [
+                            Text("PERMISSÃO", style: GoogleFonts.roboto(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal, color: Color.fromRGBO(32, 99, 155, 1),
+
+                            ),),
+                          ],
+                        ),
+
+                      ),
+
+                    ),
+                    Container(
+
+                      width: 305,
+                      child: TextFormField(
+                        controller: _permissao,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black
+
+                        ),
+                        validator: (String? value){
+                          if(value == null || value.isEmpty){
+                            return 'O campo permissão está vazio';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                            hintText: 'Digite uma permissao EX: (Funcionario/Gerente)',
+                            border: UnderlineInputBorder(
+                                borderSide: new BorderSide(
+                                    color: Color.fromRGBO(32, 99, 155, 1)
+                                )
+                            )
+                        ),
+                      ),
+
+                    ),
+
+
+
                   ],
                 ),
 
-                SizedBox(
-                  height: 50,
-                ),
                 Container(
-
+                  margin: EdgeInsets.symmetric(vertical: 25),
                   child: ElevatedButton(
-                    style: confirmButton,
-                    onPressed: ()async {
-
-                      int id_user = int.parse(_id.text);
-                      var response = await HttpService().updateClient(_nome.text,_email.text,_senha.text,id_user);
-
-                      if(response.senha == "" && response.email == ""){
-                        final error= SnackBar(
-                          content: Text("Algo deu errado"),
-                          backgroundColor: Colors.red,
-
-                        );
-
-                        ScaffoldMessenger.of(context).showSnackBar(error);
-                      }else{
-
-                        var prefs = await SharedPreferences.getInstance();
-                        prefs.clear();
-                        await HttpService().searchClient(id_user);
-
+                    style: registerButton,
+                    onPressed: () async {
+                      if(_formKey.currentState!.validate()){
+                        var response = await HttpService().RegisterFuncionario(_nome.text, _email.text, _senha.text, _permissao.text);
                         final sucess = SnackBar(
-                          content: Text("Usuario editado com sucesso!"),
+                          content: Text("Funcionario Criado com sucesso!"),
                           backgroundColor: Colors.green,
 
                         );
                         ScaffoldMessenger.of(context).showSnackBar(sucess);
-                        Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => DashBoardGerente())
+                        );
                       }
+
 
                     }, child: Text("CONFIRMAR",),
                   ),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+
                 Container(
-
-                  child: ElevatedButton(
-                    style: deleteButton,
-                    onPressed: () async{
-                      int id_user = int.parse(_id.text);
-                      var response = await HttpService().deleteClient(id_user);
-                      if(response.toString().isNotEmpty){
-
-                        final sucess = SnackBar(
-                          content: Text("Usuario deletado com sucesso!"),
-                          backgroundColor: Colors.indigo,
-
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(sucess);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => Login()),
-                            (Route<dynamic> route) => false,
-                        );
+                  child: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      color: Color.fromRGBO(32, 99, 155, 1),
+                      onPressed: () {
+                        Navigator.pop(context);
                       }
-                    }, child: Text("DELETAR PERFIL",),
                   ),
+
                 ),
 
 
@@ -321,13 +314,16 @@ class _EditProfileState extends State<EditProfile>  {
     );
 
   }
+
 }
 
-final ButtonStyle confirmButton = TextButton.styleFrom(
 
-    minimumSize: Size(233, 53),
+
+final ButtonStyle registerButton = TextButton.styleFrom(
+
+    minimumSize: Size(166, 53),
     padding: EdgeInsets.symmetric(horizontal: 16.0),
-    backgroundColor: Colors.green,
+    backgroundColor: Color.fromRGBO(32, 99, 155, 1),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(2.0)),
 
@@ -339,18 +335,21 @@ final ButtonStyle confirmButton = TextButton.styleFrom(
     )
 );
 
-final ButtonStyle deleteButton = TextButton.styleFrom(
-
-    minimumSize: Size(233, 53),
+final ButtonStyle backButton = TextButton.styleFrom(
+    primary: Color.fromRGBO(32, 99, 155, 1),
+    minimumSize: Size(166, 53),
     padding: EdgeInsets.symmetric(horizontal: 16.0),
-    backgroundColor: Colors.red,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(2.0)),
 
+
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(2.0)),
+        side: BorderSide(
+          color: Color.fromRGBO(32, 99, 155, 1),
+        )
     ),
     textStyle: GoogleFonts.roboto(
       fontWeight: FontWeight.bold,
       fontSize: 20,
-
     )
+
 );

@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_session/flutter_session.dart';
 import 'package:frontend/model/Usuario.dart';
-import 'package:frontend/screen/dashboard.dart';
-import 'package:frontend/screen/http_service.dart';
+import 'package:frontend/screen/client/dashboard.dart';
+import 'package:frontend/screen/api/http_service.dart';
+import 'package:frontend/screen/gerente/dashboardGerente.dart';
 import 'package:frontend/screen/register.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:google_fonts/google_fonts.dart';
@@ -31,7 +32,7 @@ class _LoginState extends State<Login> {
 
     saveData() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      Usuario user = Usuario(id: 0,nome: "", email: _email.text, senha: _senha.text);
+      Usuario user = Usuario(id: 0,nome: "", email: _email.text, senha: _senha.text, tipoUsuario: "");
     }
 
     return Scaffold(
@@ -198,17 +199,36 @@ class _LoginState extends State<Login> {
 
                             ScaffoldMessenger.of(context).showSnackBar(error);
                           }else{
+                            if(response.tipoUsuario == "cliente"){
+                              final sucess = SnackBar(
+                                content: Text("Usuario Logado com sucesso!"),
+                                backgroundColor: Colors.green,
 
-                            final sucess = SnackBar(
-                              content: Text("Usuario Logado com sucesso!"),
-                              backgroundColor: Colors.green,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(sucess);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => DashBoard())
+                              );
+                            }else if(response.tipoUsuario == "Gerente"){
+                              final sucess = SnackBar(
+                                content: Text("Usuario Logado com sucesso!"),
+                                backgroundColor: Colors.green,
 
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(sucess);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => DashBoard())
-                            );
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(sucess);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => DashBoardGerente())
+                              );
+                            }else if(response.tipoUsuario == "Funcionario"){
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => DashBoard())
+                              );
+                            }
+
+
                           }
 
                         }
@@ -216,7 +236,9 @@ class _LoginState extends State<Login> {
                       }, child: Text("ENTRAR",),
                     ),
                   ),
-
+               SizedBox(
+                 height: 50,
+               ),
                Container(
 
                   child: ElevatedButton(

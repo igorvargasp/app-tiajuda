@@ -1,6 +1,8 @@
 package br.com.csi.backend.controller;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -73,4 +75,51 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    //--------------------------------------------------------
+    //-----------------GERENTE--------------------------------
+    //--------------------------------------------------------
+
+    @GetMapping("/users/gerente")
+    public ResponseEntity<List<Usuario>> getFuncionarios(){
+        try {
+            return ResponseEntity.ok(userService.findAllFuncionarios());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/users/gerente")
+    public ResponseEntity<Usuario> createFuncionarios(@RequestBody Usuario user){
+            try {
+                return ResponseEntity.ok(userService.createUserFuncionario(user));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/users/gerente/{id}")
+    public ResponseEntity<Usuario> updateFuncionario(@PathVariable("id") int id, @RequestBody Usuario usuario){
+        try {
+            return ResponseEntity.ok(userService.updateUserFuncionario(id, usuario));
+        } catch (Exception e) {
+
+           e.printStackTrace();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    
+    @DeleteMapping("/editar/funcionario/{id}")
+    public ResponseEntity<?> deleteFuncionario(@PathVariable("id") int id){
+        try {
+            return ResponseEntity.ok(userService.removeUserFuncionario(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }
