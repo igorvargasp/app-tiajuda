@@ -22,8 +22,10 @@ environment:
 
 dependencies:
   http: ^0.12.2
+  dropdownfield: ^1.0.3
   flutter:
     sdk: flutter
+
 
 
   # The following adds the Cupertino Icons font to your application.

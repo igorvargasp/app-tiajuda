@@ -5,6 +5,7 @@ import 'package:flutter_session/flutter_session.dart';
 import 'package:frontend/model/Usuario.dart';
 import 'package:frontend/screen/client/dashboard.dart';
 import 'package:frontend/screen/api/http_service.dart';
+import 'package:frontend/screen/funcionario/dashboardfuncionario.dart';
 import 'package:frontend/screen/gerente/dashboardGerente.dart';
 import 'package:frontend/screen/register.dart';
 // ignore: import_of_legacy_library_into_null_safe
@@ -189,6 +190,8 @@ class _LoginState extends State<Login> {
                         if(_formKey.currentState!.validate()){
 
                           var response = await HttpService().postLogin(_email.text,_senha.text);
+                         
+                          
 
                           if(response.senha == "" && response.email == ""){
                             final error= SnackBar(
@@ -200,6 +203,7 @@ class _LoginState extends State<Login> {
                             ScaffoldMessenger.of(context).showSnackBar(error);
                           }else{
                             if(response.tipoUsuario == "cliente"){
+                              
                               final sucess = SnackBar(
                                 content: Text("Usuario Logado com sucesso!"),
                                 backgroundColor: Colors.green,
@@ -224,7 +228,7 @@ class _LoginState extends State<Login> {
                             }else if(response.tipoUsuario == "Funcionario"){
                               Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => DashBoard())
+                                  MaterialPageRoute(builder: (context) => DashBoardFunc())
                               );
                             }
 

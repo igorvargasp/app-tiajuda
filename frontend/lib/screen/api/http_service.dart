@@ -4,6 +4,8 @@
 import 'dart:convert';
 
 import 'package:frontend/model/Categoria.dart';
+import 'package:frontend/model/Resposta.dart';
+import 'package:frontend/model/Solicitacao.dart';
 import 'package:frontend/model/Usuario.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
@@ -134,6 +136,11 @@ class HttpService {
     return http.get(Uri.parse(url),headers: {'Content-Type': 'application/json'});
   }
 
+  static Future searchOneCategoria(int id){
+    String url = "http://10.0.2.2:8080/categoria/$id";
+    return http.get(Uri.parse(url),headers: {'Content-Type': 'application/json'});
+  }
+
     //------------------------------
     //-----------GERENTE-----------
     //--------------------------------
@@ -185,6 +192,98 @@ class HttpService {
     return response.body;
   }
 
+      //----------------------------
+      //----------SOLICITAÇÃO-------
+    //-------------------------
+
+  Future<Solicitacao> RegisterSolicitacao(String mensagem, String status, String titulo, int usuario, int categoria ) async{
+    String url = "http://10.0.2.2:8080/solicitacao";
+    final response = await http.post(Uri.parse(url),headers: {'Content-Type': 'application/json'}, body: jsonEncode({
+      "mensagem":  mensagem,
+      "status": status,
+      "titulo": titulo,
+      "usuario": usuario,
+      "categoria": categoria
+    }));
+    print(response.body);
+    if(response.statusCode == 200){
+      return Solicitacao.fromJson(jsonDecode(response.body));
+    }else{
+      return new Solicitacao(id_solicitacao: 0, categoria: 0, usuario: 0, mensagem: "", status: "",titulo: "");
+    }
+
+  }
+
+  static Future getSolicitacao() async{
+    var prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic> map = jsonDecode(prefs.getString("usuario"));
+    Usuario obj = Usuario.fromJson(map);
+    int id = obj.id;
+    String url = "http://10.0.2.2:8080/solicitacao/$id";
+    return await http.get(Uri.parse(url),headers: {'Content-Type': 'application/json'});
+
+
+  }
+
+  Future<String> deleteSolicitacao(int id) async{
+    String url = "http://10.0.2.2:8080/solicitacao/$id";
+    final response = await http.delete(Uri.parse(url),headers: {'Content-Type': 'application/json'});
+    return response.body;
+  }
+
+  static Future getAllSolicitacao() async{
+    String url = "http://10.0.2.2:8080/solicitacao";
+    return await http.get(Uri.parse(url),headers: {'Content-Type': 'application/json'});
+
+
+  }
+  Future<Solicitacao> updateSolicitacao(String mensagem, String status, String titulo, int usuario, int categoria,int idSolicitacao ) async{
+    String url = "http://10.0.2.2:8080/solicitacao/editar/$idSolicitacao";
+    final response = await http.put(Uri.parse(url),headers: {'Content-Type': 'application/json'}, body: jsonEncode({
+      "mensagem":  mensagem,
+      "status": status,
+      "titulo": titulo,
+      "usuario": usuario,
+      "categoria": categoria
+    }));
+    print(response.body);
+    if(response.statusCode == 200){
+      return Solicitacao.fromJson(jsonDecode(response.body));
+    }else{
+      return new Solicitacao(id_solicitacao: 0, categoria: 0, usuario: 0, mensagem: "", status: "",titulo: "");
+    }
+
+  }
+
+
+  //-------------------------
+ //-------Respostas----------
+//---------------------------
+
+  Future<Resposta> RegisterResposta(String mensagem, String status, String titulo, int usuario, int solicitacao ) async{
+    String url = "http://10.0.2.2:8080/resposta";
+    final response = await http.post(Uri.parse(url),headers: {'Content-Type': 'application/json'}, body: jsonEncode({
+      "mensagem":  mensagem,
+      "status": status,
+      "titulo": titulo,
+      "usuario": usuario,
+      "solicitacao": solicitacao
+    }));
+    print(response.body);
+    if(response.statusCode == 200){
+      return Resposta.fromJson(jsonDecode(response.body));
+    }else{
+      return new Resposta(id_resposta: 0, mensagem: "", status: "", titulo: "", usuario: 0, solicitacao:0);
+    }
+
+  }
+
+  static Future getResponse(int id) async{
+    String url = "http://10.0.2.2:8080/resposta/$id";
+    return await http.get(Uri.parse(url),headers: {'Content-Type': 'application/json'});
+
+
+  }
 }
 
 

@@ -2,7 +2,7 @@ package br.com.csi.backend.model;
 import javax.persistence.*;
 
 import lombok.Data;
-import lombok.Setter;
+
 
 
 

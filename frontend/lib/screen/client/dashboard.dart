@@ -1,10 +1,18 @@
 
+import 'dart:convert';
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_session/flutter_session.dart';
+import 'package:frontend/model/Categoria.dart';
+import 'package:frontend/model/Solicitacao.dart';
+import 'package:frontend/screen/api/http_service.dart';
 import 'package:frontend/screen/client/editprofile.dart';
+import 'package:frontend/screen/client/sentSolicitation.dart';
+import 'package:frontend/screen/client/solicitationSelect.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class DashBoard extends StatefulWidget {
   DashBoard({Key? key}) : super(key: key);
@@ -16,6 +24,40 @@ class DashBoard extends StatefulWidget {
 
 
 class _DashBoardState extends State<DashBoard> {
+  final _nome = TextEditingController();
+  List<Solicitacao> solicitacao = <Solicitacao>[];
+  List<Solicitacao> filtro = <Solicitacao>[];
+  List<Categoria> categoria = <Categoria>[];
+
+  _listaSolicitacao(){
+     HttpService.getSolicitacao().then((response){
+       setState(() {
+         Iterable list = jsonDecode(response.body);
+         solicitacao = list.map((model) => Solicitacao.fromJson(model)).toList();
+         filtro = solicitacao;
+       });
+     });
+
+  }
+  _listaCategoria(){
+    HttpService.searchCategoria().then((response){
+      setState(() {
+        Iterable list = jsonDecode(response.body);
+        categoria = list.map((model) => Categoria.fromJson(model)).toList();
+      });
+    });
+  }
+
+  initState(){
+    super.initState();
+    _listaSolicitacao();
+    _listaCategoria();
+    //var timer = Timer.periodic(Duration(seconds: 5), (Timer t) => _EditarCategoriaState());
+  }
+
+  dispose(){
+    super.dispose();
+  }
 
   Widget build(BuildContext context){
 
@@ -26,7 +68,14 @@ class _DashBoardState extends State<DashBoard> {
     }
 
 
+
+
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("SOLICITAÇÕES",),
+        backgroundColor: Color.fromRGBO(32, 99, 155, 1),
+      ),
       body: SingleChildScrollView(
         child: Container(
           child: Column(
@@ -38,11 +87,8 @@ class _DashBoardState extends State<DashBoard> {
 
                  autofocus: true,
 
-                 /*controller: TextEditingController(
-                   text: usuario.nome,
-
-                 ),
-                 onChanged: (val){
+                 controller: _nome,
+                 /*onChanged: (val){
                    usuario.nome = val;
                  },*/
                  style: TextStyle(
@@ -57,38 +103,147 @@ class _DashBoardState extends State<DashBoard> {
                    }
                    return null;
                  },
-
+                  onChanged: (string){
+                   setState(() {
+                     filtro = solicitacao.where((u) => (u.titulo.toLowerCase().contains(string.toLowerCase()))).toList();
+                   }); 
+                   },
                  decoration: InputDecoration(
                   prefixIcon:Icon(
                      Icons.search_outlined
                    ),
-                   hintText: 'Pesquise por titulo, categoria ou status',
-                  border: OutlineInputBorder(
+                   hintText: 'Pesquise por titulo, categoria',
 
-                  )
 
                  ),
 
                ),
              ),
              Container(
-               constraints: BoxConstraints(minWidth: 100, maxWidth: 300),
                margin: EdgeInsets.symmetric(vertical: 20),
-               height: 300,
-               alignment: Alignment.center,
-               color: Colors.blue,
-               child: Text("Aqui vai so dados da solicitacao"),
+               child: Column(
+                 children: [
+                   Container(
+                     height: 300,
+                     child: ListView.builder(
+                       itemCount: filtro.length,
+                       itemBuilder: (context, int index){
+                         var _color;
+                         if(solicitacao[index].status == "pendente"){
+                            _color = Colors.amber;
+                          }else{
+                           _color = Colors.green;
+                         }
+                         return Card(
+                           child: Padding(
+                             padding: EdgeInsets.all(10.0),
+                             child: Column(
+                               mainAxisAlignment: MainAxisAlignment.start,
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
+                                Container(
+
+                                  child: Row(
+                                    children: [
+                                      Title(color: Color.fromRGBO(32, 99, 155, 1), child: Text("TÍTULO: ",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color:Color.fromRGBO(32, 99, 155, 1)
+                                        ) ,)),
+                                      Text(filtro[index].titulo, style: TextStyle(
+                                          fontWeight: FontWeight.w400
+                                      ),),
+                                    ],
+                                  ),
+                                ),
+                                 Container(
+                                    height:20,
+                                   child: ListView.builder(
+                                     itemCount: categoria.length,
+                                     itemBuilder: (context, int i){
+                                       if(solicitacao[index].categoria == categoria[i].id){
+                                         return Container(
+                                             child: Row(
+                                                children: [
+                                                  Title(color: Color.fromRGBO(32, 99, 155, 1), child: Text("CATEGORIA: ",
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color:Color.fromRGBO(32, 99, 155, 1)
+                                                    ) ,)),
+                                                  Text(categoria[i].nome)
+                                                ],
+                                             )
+                                         );
+                                       }else{
+                                         return Text("teste");
+                                       }
+
+                                    },
+                                 ),),
+
+
+                                 Container(
+
+                                   child: Row(
+                                     children: [
+
+                                       Title(color: Color.fromRGBO(32, 99, 155, 1), child: Text("STATUS: ",
+                                         style: TextStyle(
+                                             fontWeight: FontWeight.bold,
+                                             color:Color.fromRGBO(32, 99, 155, 1)
+                                         ) ,)),
+                                       Text(filtro[index].status, style: TextStyle(
+                                         fontWeight: FontWeight.bold,
+                                         color: _color
+
+                                       ),),
+                                       SizedBox(
+                                         width: 180,
+                                       ),
+                                       Container(
+
+                                         child: TextButton(
+                                           onPressed: () async{
+                                             Solicitacao lista = filtro[index];
+                                             String json = jsonEncode(lista);
+                                              print(json.toString());
+
+                                             Navigator.push(
+                                                 context,
+                                                 MaterialPageRoute(builder: (context) => SolicitacaoSelecao(json:json))
+                                             );
+                                           },child: Text("EXIBIR"),
+                                         )
+                                       )
+                                     ],
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ),
+                         );
+
+                       }
+                     ),
+                   )
+                 ],
+               ),
              ),
              SizedBox(
-               height: 80,
+               height: 10,
              ),
 
              Container(
 
                child: ElevatedButton(
                  style: sendButton,
-                 onPressed: (){
-
+                 onPressed: () async{
+                   var prefs = await SharedPreferences.getInstance();
+                   String usuario = (prefs.getString("usuario"));
+                   Navigator.push(
+                       context,
+                       MaterialPageRoute(builder: (context) => Solicitation(json:usuario))
+                   );
                  }, child: Text("ENVIAR UM NOVO PROBLEMA",),
                ),
              ),
@@ -186,3 +341,7 @@ final ButtonStyle logoutButton = TextButton.styleFrom(
       fontSize: 14,
     )
 );
+
+
+
+
